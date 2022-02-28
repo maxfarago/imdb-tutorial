@@ -73,7 +73,8 @@ resource "aws_db_subnet_group" "private" {
   subnet_ids = [aws_subnet.private1.id, aws_subnet.private2.id]
 
   tags = {
-    Name = "My DB subnet group"
+    Name    = "IMDB_SUBNET_GROUP"
+    Project = "IMDB"
   }
 }
 
@@ -136,29 +137,12 @@ resource "aws_security_group" "allow_tls" {
   vpc_id      = aws_vpc.vpc1.id
 
   ingress {
-    description      = "TLS from public"
-    from_port        = 443
-    to_port          = 443
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-
-  ingress {
     description      = "TLS to IMDB API"
     from_port        = 3000
     to_port          = 3000
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
-  }
-
-  ingress {
-    description = "SSH from Joel"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -174,33 +158,18 @@ resource "aws_security_group" "allow_tls" {
   }
 }
 
-resource "aws_security_group" "web_servers" {
-  name        = "web_servers"
-  description = "servers behind load balancer"
+resource "aws_security_group" "api_server" {
+  name        = "api_server"
+  description = "api server SG"
   vpc_id      = aws_vpc.vpc1.id
 
   ingress {
-    description     = "requests from load balancer"
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.allow_tls.id]
-  }
-
-  ingress {
-    cidr_blocks      = ["0.0.0.0/0", ]
-    from_port        = 443
-    ipv6_cidr_blocks = ["::/0", ]
+    description      = "inbound traffic from load balancer"
+    from_port        = 3000
+    to_port          = 3000
     protocol         = "tcp"
-    to_port          = 443
     security_groups  = [aws_security_group.allow_tls.id]
-  }
 
-  ingress {
-    from_port       = 22
-    protocol        = "tcp"
-    to_port         = 22
-    security_groups = [aws_security_group.allow_tls.id]
   }
 
   egress {
@@ -212,9 +181,11 @@ resource "aws_security_group" "web_servers" {
   }
 
   tags = {
-    Name = "web_servers"
+    Name    = "api_server"
+    Project = "IMDB"
   }
 }
+
 
 resource "aws_security_group" "imdb_sg" {
   name        = "imdb_sg"
@@ -222,18 +193,11 @@ resource "aws_security_group" "imdb_sg" {
   vpc_id      = aws_vpc.vpc1.id
 
   ingress {
-    description     = "requests from API"
+    description     = "queries from API"
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [aws_security_group.allow_tls.id]
-  }
-
-  ingress {
-    from_port       = 22
-    protocol        = "tcp"
-    to_port         = 22
-    security_groups = [aws_security_group.allow_tls.id]
+    security_groups = [aws_security_group.api_server.id]
   }
 
   egress {

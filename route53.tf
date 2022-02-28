@@ -7,13 +7,12 @@ resource "aws_route53_record" "record_a" {
   zone_id = data.aws_route53_zone.hosted_zone.zone_id
   name    = var.new_sub_domain
   type    = "A"
-  ttl = 300
-  records = [aws_instance.imdb.public_ip]
-  # alias {
-  #   name                   = aws_instance.imdb.public_dns
-  #   zone_id                = data.aws_route53_zone.hosted_zone.zone_id
-  #   evaluate_target_health = true
-  # }
+
+  alias {
+    name                   = aws_lb.imdb.dns_name
+    zone_id                = aws_lb.imdb.zone_id
+    evaluate_target_health = true
+  }
 }
 
 resource "aws_route53_record" "cert_validation" {

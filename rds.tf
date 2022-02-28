@@ -18,4 +18,8 @@ resource "aws_db_instance" "imdb" {
   username               = "postgres"
   password               = aws_ssm_parameter.rdspw.value
   skip_final_snapshot    = true
+  tags = {
+    name    = "IMDB-DB"
+    project = "IMDB"
+  }
 }

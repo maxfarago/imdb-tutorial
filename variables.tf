@@ -43,12 +43,7 @@ variable "new_sub_domain" {
   description = "Domain for the ACM certificate"
 }
 
-# variable "lb_name" {
-#   type        = string
-#   description = "Name for the load balancer"
-# }
-
-# variable "lb_log_bucket" {
-#   type        = string
-#   description = "Name for the log bucket"
-# }
+variable "lb_log_bucket" {
+  type        = string
+  description = "Name for the log bucket"
+}
